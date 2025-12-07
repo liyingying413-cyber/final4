@@ -14,29 +14,29 @@ st.title("🌆 City × Memory × Emotion — Art Poster Generator")
 # ---------------------------------------------------------------------
 with st.expander("📘 About This App (Click to expand)", expanded=True):
     st.markdown("""
-This application transforms your **City × Memory × Emotion** into an abstract generative art poster.
+This app transforms your **City × Memory × Emotion** into an abstract generative art poster.
 
 **Features:**
 
-- Fully local generation — **no API required**, totally free, runs on Streamlit Cloud.
-- Uses three visual styles:
-  - **Mist** — dreamy atmospheric diffusion  
-  - **Watercolor** — organic flowing texture  
-  - **Pastel** — soft grain & illustration-like feeling  
-- Analyzes your **city name** and **memory text** to derive emotional color palettes and composition tendencies.
+- Fully local generation — **no external API required**, totally free, and runs on Streamlit Cloud.
+- Combines three visual styles:
+  - **Mist** — soft, dreamy, atmospheric diffusion  
+  - **Watercolor** — organic flowing textures  
+  - **Pastel** — soft grain and illustration-like feel  
+- Analyses your **city name** and **memory text** to derive emotional color palettes and composition tendencies.
 
-Use the sliders on the left to explore different artistic variations.
+Use the sliders on the left to explore different emotional visual expressions.
     """)
 
 st.write("---")
 
 # ---------------------------------------------------------------------
-# Step 1 — Input Section
+# Step 1 — Input
 # ---------------------------------------------------------------------
-st.subheader("Step 1 — Enter Your City and Memory Description")
+st.subheader("Step 1 — Enter Your City and Memory Text")
 
 city = st.text_input("City Name", placeholder="e.g., Seoul / Nanjing / Tokyo ...")
-memory_text = st.text_area("Write your memory of this city:", height=180)
+memory_text = st.text_area("Write your memory about this city:", height=180)
 
 st.write("---")
 
@@ -60,34 +60,38 @@ pastel_blend = st.sidebar.slider("Blend Ratio", 0.0, 1.0, 0.6)
 
 st.sidebar.header("💗 Emotion Link")
 emotion_link = st.sidebar.slider(
-    "How strongly emotion influences the final art",
+    "How strongly emotion influences the visual style",
     0.0, 1.0, 0.7
 )
 
 st.sidebar.header("🎲 Random Seed")
 manual_seed = st.sidebar.number_input(
-    "Seed (optional; keeps the output reproducible)", 
-    value=42, step=1
+    "Seed (optional; if unchanged it will be auto-generated from text)",
+    value=42,
+    step=1,
 )
-use_auto_seed = st.sidebar.checkbox("Auto-generate seed from city + memory", value=True)
+use_auto_seed = st.sidebar.checkbox(
+    "Automatically generate seed from city + memory text",
+    value=True,
+)
 
 st.sidebar.write("----")
 generate_btn = st.sidebar.button("🎨 Generate Poster")
 
 # ---------------------------------------------------------------------
-# Step 2 — Local Emotional & Color Analysis
+# Step 2 — Local Emotion & Color Analysis
 # ---------------------------------------------------------------------
 st.subheader("Step 2 — Local Emotion & Color Analysis")
 
 if generate_btn:
     if not city.strip() or not memory_text.strip():
-        st.error("City and memory text cannot be empty!")
+        st.error("City name and memory text cannot be empty!")
         st.stop()
 
     analysis = analyze_memory_local(city, memory_text)
     st.json(analysis)
 
-    # Auto seed based on content
+    # Auto seed based on city + text for reproducible mood
     if use_auto_seed:
         seed = abs(hash(city.strip() + memory_text.strip())) % 10**6
     else:
@@ -98,7 +102,7 @@ if generate_btn:
     # -----------------------------------------------------------------
     # Step 3 — Local Poster Generation
     # -----------------------------------------------------------------
-    st.subheader("Step 3 — Local Poster Generation (Offline)")
+    st.subheader("Step 3 — Generate Art Poster Locally (Offline)")
 
     with st.spinner("Generating poster, please wait..."):
         poster_bytes = generate_poster(
@@ -126,5 +130,5 @@ if generate_btn:
             "📥 Download PNG",
             data=poster_bytes,
             file_name=f"{city}_art_poster.png",
-            mime="image/png"
+            mime="image/png",
         )
