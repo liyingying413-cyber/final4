@@ -294,7 +294,7 @@ def _detect_city_tags(city: str, memory_text: str) -> List[str]:
 
     # Fallback
     if not tags:
-        tags = ["waves"]
+        tags = []
 
     return tags
 
