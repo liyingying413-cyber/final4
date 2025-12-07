@@ -5,13 +5,13 @@ import colorsys
 def generate_palette(mood: str, intensity: float):
     """
     Generate a soft color palette (3–5 colors) based on mood and intensity.
-    Output format: [(r, g, b), ...] with values 0–255.
+    Output format: [(r, g, b), ...] with values in 0–255.
     """
 
-    # Base HSV for different moods
+    # Base HSV for each mood
     mood_to_hsv = {
         "calm":      (200 / 360, 0.25, 0.95),  # blue-green
-        "nostalgic": (35  / 360, 0.35, 0.96),  # warm yellow-orange
+        "nostalgic": (35  / 360, 0.35, 0.96),  # warm yellow/orange
         "dreamy":    (260 / 360, 0.30, 0.98),  # purple-blue
         "sad":       (210 / 360, 0.22, 0.90),  # dark blue
         "happy":     (50  / 360, 0.45, 0.99),  # bright yellow
@@ -24,12 +24,12 @@ def generate_palette(mood: str, intensity: float):
     num_colors = np.random.randint(3, 6)
 
     for _ in range(num_colors):
-        # Add variation for more diverse colors
+        # Increase variation to make colors more distinct
         h = (base_h + np.random.uniform(-0.12, 0.12)) % 1.0
         s = np.clip(base_s + np.random.uniform(-0.25, 0.2), 0.05, 0.95)
         v = np.clip(base_v + np.random.uniform(-0.2, 0.2), 0.4, 1.0)
 
-        # Higher intensity → stronger contrast and slightly darker tones
+        # Higher intensity → stronger contrast and slightly darker
         v *= (0.9 - 0.3 * intensity)
 
         r, g, b = colorsys.hsv_to_rgb(h, s, v)
@@ -40,8 +40,9 @@ def generate_palette(mood: str, intensity: float):
 
 def analyze_memory_local(city: str, memory: str):
     """
-    Local emotional analysis (no API needed).
-    Uses keyword matching + punctuation + text length to estimate mood and intensity.
+    Local emotion analysis (no API).
+    Roughly estimates mood label and intensity from keywords,
+    punctuation, and text length.
     """
 
     text = (city + " " + memory).lower()
@@ -60,7 +61,6 @@ def analyze_memory_local(city: str, memory: str):
     def contains_any(words):
         return any(w in text for w in words)
 
-    # Determine mood
     if contains_any(sad_words):
         mood = "sad"
         intensity = 0.7
@@ -80,7 +80,7 @@ def analyze_memory_local(city: str, memory: str):
         mood = "tense"
         intensity = 0.7
     else:
-        # Neutral mood hints
+        # Neutral mood hints when no strong keywords
         if any(w in text for w in ["rain", "fog", "mist", "雨", "雾"]):
             mood = "nostalgic"
             intensity = 0.55
@@ -91,13 +91,12 @@ def analyze_memory_local(city: str, memory: str):
             mood = "dreamy"
             intensity = 0.6
 
-    # Adjust intensity based on text length + exclamation marks
+    # Intensity adjustment: longer text & more exclamation marks → stronger intensity
     length_factor = min(len(memory) / 400.0, 1.0)
     exclam = memory.count("!") + memory.count("！")
     intensity += 0.1 * length_factor + 0.05 * exclam
     intensity = float(np.clip(intensity, 0.3, 0.85))
 
-    # Generate palette using detected mood
     palette = generate_palette(mood, intensity)
 
     return {
